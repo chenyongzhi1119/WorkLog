@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorkLog</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <header class="header">
+    <div class="header-inner">
+      <span class="logo" id="logo" style="cursor:pointer" title="返回对话">WorkLog</span>
+      <nav class="tabs">
+        <button class="tab active" data-tab="chat">对话</button>
+        <button class="tab" data-tab="overview">概览</button>
+        <button class="tab" data-tab="daily">日报</button>
+        <button class="tab" data-tab="reports">报告</button>
+        <button class="tab" data-tab="goals">目标</button>
+      </nav>
+      <span class="date-display" id="date-display"></span>
+      <button class="btn-settings" id="btn-open-settings">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span id="provider-badge">配置 AI</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settings-modal">
+    <div class="modal modal-wide">
+      <div class="modal-hd">
+        <div class="modal-tabs">
+          <button class="modal-tab active" data-mtab="provider">AI 供应商</button>
+          <button class="modal-tab" data-mtab="profile">个人档案</button>
+        </div>
+        <button class="modal-close" id="btn-close-settings">×</button>
+      </div>
+      <!-- AI Provider -->
+      <div class="modal-tab-content active" id="mtab-provider">
+        <div class="modal-body" id="settings-body"></div>
+        <div class="modal-ft">
+          <button class="btn btn-ghost" id="btn-cancel-settings">取消</button>
+          <button class="btn btn-primary" id="btn-save-settings">保存配置</button>
+        </div>
+      </div>
+      <!-- Profile -->
+      <div class="modal-tab-content" id="mtab-profile">
+        <div class="modal-body">
+          <div class="profile-grid">
+            <div class="fg"><label>姓名</label><input type="text" id="p-name" placeholder="你的名字"></div>
+            <div class="fg"><label>岗位 / 职位</label><input type="text" id="p-role" placeholder="例：软件工程师"></div>
+            <div class="fg"><label>团队 / 部门</label><input type="text" id="p-team" placeholder="例：XX 部 YY 组"></div>
+            <div class="fg">
+              <label>当前阶段</label>
+              <select id="p-stage">
+                <option value="">请选择</option>
+                <option value="新人（1年内）">新人（1 年内）</option>
+                <option value="成长期（1-3年）">成长期（1-3 年）</option>
+                <option value="资深（3年以上）">资深（3 年以上）</option>
+              </select>
+            </div>
+            <div class="fg" style="grid-column:1/-1"><label>当前主要项目</label><input type="text" id="p-projects" placeholder="例：项目A、项目B"></div>
+            <div class="fg"><label>日报提醒时间</label><input type="time" id="p-reminder" value="17:30"></div>
+            <div class="fg reminder-perm">
+              <label>浏览器通知</label>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
+                <span id="notif-status" class="notif-status">未授权</span>
+                <button class="btn btn-ghost" id="btn-req-notif">请求权限</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-ft">
+          <button class="btn btn-ghost" id="btn-cancel-profile">取消</button>
+          <button class="btn btn-primary" id="btn-save-profile">保存档案</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main class="main">
+
+    <!-- ═══ 对话 ═══════════════════════════════════════════════ -->
+    <section class="tab-content active" id="tab-chat">
+      <div class="home-layout">
+        <div class="home-chat">
+          <div id="home-msgs" class="home-msgs"></div>
+          <div class="chips">
+            <button class="chip" data-msg="帮我制定今天的工作计划">📅 制定今日计划</button>
+            <button class="chip" data-msg="帮我整理今天的日报">📝 整理日报</button>
+            <button class="chip" data-msg="帮我做一个本周工作总结和复盘">📊 本周总结</button>
+            <button class="chip" data-msg="检查一下我的目标进度，问我最新情况">🎯 检查目标</button>
+            <button class="chip chip-danger" id="btn-clear-chat">🗑 清空对话</button>
+          </div>
+          <div class="home-input-area">
+            <textarea id="home-input" rows="2" placeholder="和导师聊聊工作... (Enter 发送，Shift+Enter 换行)"></textarea>
+            <button class="btn btn-ghost" id="home-stop" style="display:none">停止</button>
+            <button class="btn btn-primary" id="home-send">发送</button>
+          </div>
+        </div>
+        <div class="home-sidebar">
+          <div class="sb-card">
+            <div class="sb-card-hd">
+              <span>目标进度</span>
+              <button class="btn-text" onclick="switchTab('goals')">管理 →</button>
+            </div>
+            <div id="sb-goals" class="sb-goals-body"><p class="hint">暂无目标</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 概览 Dashboard ══════════════════════════════════════ -->
+    <section class="tab-content" id="tab-overview">
+      <div class="tab-scroll">
+        <div class="overview-layout">
+
+          <!-- 统计卡片行 -->
+          <div class="stat-cards">
+            <div class="stat-card">
+              <div class="stat-icon">🔥</div>
+              <div class="stat-body">
+                <div class="stat-value" id="stat-streak">—</div>
+                <div class="stat-label">连续打卡（天）</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">📋</div>
+              <div class="stat-body">
+                <div class="stat-value" id="stat-month">—</div>
+                <div class="stat-label">本月日报</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">✅</div>
+              <div class="stat-body">
+                <div class="stat-value" id="stat-tasks">—</div>
+                <div class="stat-label">本周任务完成率</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">📅</div>
+              <div class="stat-body">
+                <div class="stat-value" id="stat-week">—</div>
+                <div class="stat-label">本周日报</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="overview-cols">
+            <!-- 日历 -->
+            <div class="ov-card">
+              <div class="ov-card-hd">
+                <span id="cal-title">本月日历</span>
+                <div style="display:flex;gap:6px">
+                  <button class="btn btn-ghost" id="cal-prev">‹</button>
+                  <button class="btn btn-ghost" id="cal-next">›</button>
+                </div>
+              </div>
+              <div id="cal-container" class="cal-container"></div>
+              <div id="cal-detail" class="cal-detail" style="display:none"></div>
+            </div>
+
+            <!-- 目标进度总览 -->
+            <div class="ov-card">
+              <div class="ov-card-hd">
+                <span>目标进度总览</span>
+                <button class="btn-text" onclick="switchTab('goals')">管理 →</button>
+              </div>
+              <div id="ov-goals" class="ov-goals"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 日报 ════════════════════════════════════════════════ -->
+    <section class="tab-content" id="tab-daily">
+      <div class="daily-layout">
+        <div id="dr-yesterday" class="dr-yesterday" style="display:none">
+          <span class="dr-yesterday-label">昨日计划参考</span>
+          <span id="dr-yesterday-text" class="dr-yesterday-text"></span>
+        </div>
+        <div id="dr-ai-completed-hint" class="dr-ai-hint" style="display:none">
+          <div class="dr-ai-hint-hd">
+            <span>AI 识别的今日完成内容（供参考，请手动勾选任务）</span>
+            <button class="btn-text" onclick="document.getElementById('dr-ai-completed-hint').style.display='none'">收起</button>
+          </div>
+          <div id="dr-ai-completed-text" class="dr-ai-hint-body"></div>
+        </div>
+        <div class="dr-section">
+          <div class="dr-section-hd">
+            <div class="dr-section-title"><span class="dr-num">一</span><span>今日完成工作</span></div>
+            <div class="dr-section-actions">
+              <span id="task-badge" class="task-badge" style="display:none"></span>
+              <button class="btn btn-ghost" id="btn-wlog-to-task">随手记导入</button>
+            </div>
+          </div>
+          <div class="dr-task-area">
+            <div id="dr-task-list" class="dr-task-list"></div>
+            <div class="dr-task-input-row">
+              <input type="text" id="dr-task-input" class="dr-task-input" placeholder="添加完成事项... (Enter)">
+              <button class="btn btn-ghost" id="btn-add-dr-task">添加</button>
+            </div>
+          </div>
+        </div>
+        <div class="dr-section">
+          <div class="dr-section-hd">
+            <div class="dr-section-title"><span class="dr-num">二</span><span>明日工作计划</span></div>
+          </div>
+          <textarea id="dr-plan" class="dr-textarea" rows="4" placeholder="明天计划完成的工作..."></textarea>
+        </div>
+        <div class="dr-section">
+          <div class="dr-section-hd">
+            <div class="dr-section-title"><span class="dr-num">三</span><span>问题和风险</span></div>
+          </div>
+          <textarea id="dr-issues" class="dr-textarea" rows="3" placeholder="遇到的困难、阻塞点、需协助事项...（无则留空）"></textarea>
+        </div>
+        <div class="dr-section dr-wlog-section">
+          <div class="dr-section-hd">
+            <div class="dr-section-title"><span class="dr-num-sm">+</span><span>随手记</span></div>
+            <span class="hint">记录工作进展，可导入今日完成</span>
+          </div>
+          <div class="dr-wlog-input-row">
+            <input type="text" id="dr-wlog-input" class="dr-task-input" placeholder="随手记一条工作进展... (Enter)">
+            <button class="btn btn-ghost" id="btn-add-dr-wlog">记录</button>
+          </div>
+          <div id="dr-wlog-list" class="dr-wlog-list"></div>
+        </div>
+        <div class="dr-footer">
+          <button class="btn btn-ghost" id="btn-copy-dr">复制日报</button>
+          <button class="btn btn-primary" id="btn-submit-dr">提交日报</button>
+        </div>
+        <div id="dr-msg" class="smsg" style="display:none;margin-top:8px"></div>
+      </div>
+    </section>
+
+    <!-- ═══ 报告 ═══════════════════════════════════════════════ -->
+    <section class="tab-content" id="tab-reports">
+      <div class="tab-scroll">
+        <div class="rtabs">
+          <button class="rtab active" data-rtab="daily">日报</button>
+          <button class="rtab" data-rtab="weekly">周报</button>
+          <button class="rtab" data-rtab="monthly">月报</button>
+        </div>
+        <div class="rtab-content active" id="rtab-daily">
+          <div class="toolbar">
+            <label>月份</label><input type="month" id="filter-month" class="tinput">
+            <button class="btn btn-ghost" id="btn-load-daily">查询</button>
+          </div>
+          <div id="daily-list" class="rlist"></div>
+        </div>
+        <div class="rtab-content" id="rtab-weekly">
+          <div class="toolbar">
+            <label>周一</label><input type="date" id="weekly-start" class="tinput">
+            <button class="btn btn-primary" id="btn-gen-weekly">AI 生成周报</button>
+          </div>
+          <div id="weekly-list" class="rlist"></div>
+        </div>
+        <div class="rtab-content" id="rtab-monthly">
+          <div class="toolbar">
+            <label>月份</label><input type="month" id="monthly-month" class="tinput">
+            <button class="btn btn-primary" id="btn-gen-monthly">AI 生成月报</button>
+          </div>
+          <div id="monthly-list" class="rlist"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 目标 ═══════════════════════════════════════════════ -->
+    <section class="tab-content" id="tab-goals">
+      <div class="tab-scroll">
+        <div class="col2-narrow">
+          <div class="card" style="align-self:start">
+            <div class="card-hd"><h2>添加目标</h2></div>
+            <div class="card-body">
+              <form id="goal-form">
+                <div class="fg"><label>标题</label><input type="text" id="g-title" placeholder="目标描述..." required></div>
+                <div class="fg"><label>说明（可选）</label><textarea id="g-desc" rows="2" placeholder="衡量指标、背景..."></textarea></div>
+                <div class="fg"><label>层级</label>
+                  <select id="g-level">
+                    <option value="long_term">长期目标</option>
+                    <option value="monthly">月目标</option>
+                    <option value="weekly">周目标</option>
+                  </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">添加</button>
+              </form>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-hd"><h2>目标列表</h2><button class="btn btn-ghost" id="btn-refresh-goals">刷新</button></div>
+            <div class="card-body"><div id="goals-list" class="glist"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div id="toast" class="toast" style="display:none"></div>
+<script src="app.js"></script>
+</body>
+</html>

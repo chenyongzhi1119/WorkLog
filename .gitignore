@@ -1,0 +1,21 @@
+# Local data
+worklog.db*
+*.db
+*.db-shm
+*.db-wal
+
+# Build outputs
+worklog
+dist/
+tmp/
+.cache/
+
+# Local editor/system files
+.DS_Store
+.idea/
+.vscode/
+
+# Codex working notes
+task_plan.md
+findings.md
+progress.md
